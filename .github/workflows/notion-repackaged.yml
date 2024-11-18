@@ -2,10 +2,7 @@ name: Notion Repackaged Main
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'notion-repackaged.sh'
-      - '.github/workflows/notion-repackaged.yml'
+    branches: [main, bump-notion-v400]
 
   workflow_dispatch:
     inputs: {}
@@ -18,33 +15,33 @@ jobs:
     name: Preload variables
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - id: preload-variables
         name: Load variables and set them as outputs
         run: |
           source notion-repackaged.sh
 
-          echo "::set-output name=notion_version::$NOTION_VERSION"
-          echo "::set-output name=notion_repackaged_revision::$NOTION_REPACKAGED_REVISION"
-          echo "::set-output name=notion_download_hash::$NOTION_DOWNLOAD_HASH"
-          echo "::set-output name=notion_enhancer_desktop_commit::$NOTION_ENHANCER_DESKTOP_COMMIT"
+          echo "notion_version=$NOTION_VERSION" >> $GITHUB_OUTPUT
+          echo "notion_repackaged_revision=$NOTION_REPACKAGED_REVISION" >> $GITHUB_OUTPUT
+          echo "notion_download_hash=$NOTION_DOWNLOAD_HASH" >> $GITHUB_OUTPUT
+          echo "notion_enhancer_desktop_commit=$NOTION_ENHANCER_DESKTOP_COMMIT" >> $GITHUB_OUTPUT
 
           NOTION_REPACKAGED_VERSION_REV="${NOTION_VERSION}-${NOTION_REPACKAGED_REVISION}"
-          echo "::set-output name=notion_repackaged_version_rev::$NOTION_REPACKAGED_VERSION_REV"
+          echo "notion_repackaged_version_rev=$NOTION_REPACKAGED_VERSION_REV" >> $GITHUB_OUTPUT
     outputs:
       notion_version: ${{ steps.preload-variables.outputs.notion_version }}
       notion_repackaged_revision: ${{ steps.preload-variables.outputs.notion_repackaged_revision }}
-      notion_repackaged_version_rev: ${{ steps.preload-variables.outputs.notion_repackaged_version_rev }}
       notion_download_hash: ${{ steps.preload-variables.outputs.notion_download_hash }}
       notion_enhancer_desktop_commit: ${{ steps.preload-variables.outputs.notion_enhancer_desktop_commit }}
+      notion_repackaged_version_rev: ${{ steps.preload-variables.outputs.notion_repackaged_version_rev }}
 
   create-release:
     name: Create release
     runs-on: ubuntu-latest
     needs: [preload-variables]
     steps:
-      - uses: actions/checkout@v2
-      - uses: release-drafter/release-drafter@v5
+      - uses: actions/checkout@v4
+      - uses: release-drafter/release-drafter@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -59,9 +56,11 @@ jobs:
       NOTION_VERSION: ${{ needs.preload-variables.outputs.notion_version }}
       NOTION_REPACKAGED_REVISION: ${{ needs.preload-variables.outputs.notion_repackaged_revision }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install moreutils
         run: sudo apt-get install -y moreutils
+      - name: Install asar
+        run: npm install -g asar
       - name: Download official Windows build
         env:
           NOTION_DOWNLOAD_HASH: ${{ needs.preload-variables.outputs.notion_download_hash }}
@@ -72,7 +71,7 @@ jobs:
         working-directory: build
         run: 7z a vanilla-src.zip vanilla-src
       - name: Save vanilla sources as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: vanilla-sources
           path: build/vanilla-src.zip
@@ -82,13 +81,15 @@ jobs:
     needs: [make-vanilla-sources, preload-variables]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install icnsutils and moreutils
         run: sudo apt-get install -y icnsutils moreutils
+      - name: Install asar
+        run: npm install -g asar
       - name: Force to use HTTPS instead of SSH
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Retrieve saved vanilla sources
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: vanilla-sources
           path: build/vanilla-src.zip
@@ -103,14 +104,20 @@ jobs:
         working-directory: build
         run: 7z a enhanced-src.zip enhanced-src
       - name: Save enhanced sources as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: enhanced-sources
           path: build/enhanced-src.zip
 
   build-app:
     name: Build app
-    needs: [make-vanilla-sources, make-enhanced-sources, preload-variables, create-release]
+    needs:
+      [
+        make-vanilla-sources,
+        make-enhanced-sources,
+        preload-variables,
+        create-release,
+      ]
     runs-on: ${{ matrix.os }}
     env:
       NOTION_VERSION: ${{ needs.preload-variables.outputs.notion_version }}
@@ -132,12 +139,12 @@ jobs:
           - target: macos
             edition: vanilla
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 22
       - name: Retrieve saved sources
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.edition }}-sources
           path: sources.zip
@@ -154,7 +161,7 @@ jobs:
         run: npx patch-package
       - name: Install electron and electron-builder
         working-directory: ${{ matrix.edition }}-src
-        run: npm install electron@11 electron-builder --save-dev
+        run: npm install electron@33.2.0 electron-builder --save-dev
       - name: Run electron-builder
         working-directory: ${{ matrix.edition }}-src
         env:
@@ -174,6 +181,6 @@ jobs:
         edition: [vanilla, enhanced]
     runs-on: ubuntu-latest
     steps:
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v5
         with:
-          name: '${{ matrix.edition }}-sources'
+          name: "${{ matrix.edition }}-sources"

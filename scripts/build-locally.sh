@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-source `dirname $0`/_utils.sh
+source $(dirname $0)/_utils.sh
 workdir ${WORKSPACE_BUILD_DIR}
 
 check-cmd jq git
@@ -26,7 +26,7 @@ if [ ! -d "${NOTION_REPACKAGED_EDITION_SRCDIR}" ]; then
   exit -1
 fi
 
-pushd "${NOTION_REPACKAGED_EDITION_SRCDIR}" > /dev/null
+pushd "${NOTION_REPACKAGED_EDITION_SRCDIR}" >/dev/null
 
 log "Installing dependencies..."
 npm install
@@ -35,10 +35,14 @@ log "Running patch-package"
 npx patch-package
 
 log "Install electron and electron-builder..."
-npm install electron@11 electron-builder --save-dev
+npm install electron@33.1.0 electron-builder electron-rebuild --save-dev
 
+log "Rebuilding native modules..."
+npx electron-rebuild -f -w better-sqlite3
+
+# Hint: Prefix the command with `DEBUG=electron-builder` to enable debug mode
 log "Running electron-builder..."
 node_modules/.bin/electron-builder \
   --config $WORKSPACE_DIR/electron-builder.js $@
 
-popd > /dev/null
+popd >/dev/null
