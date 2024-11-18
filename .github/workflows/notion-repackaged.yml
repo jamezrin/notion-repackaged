@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'notion-repackaged.sh'
-      - '.github/workflows/notion-repackaged.yml'
+      - "notion-repackaged.sh"
+      - ".github/workflows/notion-repackaged.yml"
 
   workflow_dispatch:
     inputs: {}
@@ -110,7 +110,13 @@ jobs:
 
   build-app:
     name: Build app
-    needs: [make-vanilla-sources, make-enhanced-sources, preload-variables, create-release]
+    needs:
+      [
+        make-vanilla-sources,
+        make-enhanced-sources,
+        preload-variables,
+        create-release,
+      ]
     runs-on: ${{ matrix.os }}
     env:
       NOTION_VERSION: ${{ needs.preload-variables.outputs.notion_version }}
@@ -135,7 +141,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 22
       - name: Retrieve saved sources
         uses: actions/download-artifact@v2
         with:
@@ -154,7 +160,7 @@ jobs:
         run: npx patch-package
       - name: Install electron and electron-builder
         working-directory: ${{ matrix.edition }}-src
-        run: npm install electron@11 electron-builder --save-dev
+        run: npm install electron@33.2.0 electron-builder --save-dev
       - name: Run electron-builder
         working-directory: ${{ matrix.edition }}-src
         env:
@@ -176,4 +182,4 @@ jobs:
     steps:
       - uses: geekyeggo/delete-artifact@v1
         with:
-          name: '${{ matrix.edition }}-sources'
+          name: "${{ matrix.edition }}-sources"
