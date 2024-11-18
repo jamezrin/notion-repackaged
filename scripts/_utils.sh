@@ -1,15 +1,15 @@
-export WORKSPACE_DIR=`realpath $(dirname $0)/..`
+export WORKSPACE_DIR=$(realpath $(dirname $0)/..)
 export WORKSPACE_BUILD_DIR="${WORKSPACE_DIR}/build"
 
 function log() {
-  caller=`basename "$0"`
+  caller=$(basename "$0")
   echo "[${caller%.*}]: $@"
 }
 
 function check-cmd() {
   for cmd_name in "$@"; do
-    if ! command -v ${cmd_name} > /dev/null; then
-      log "Missing required command dependency: $1"
+    if ! command -v ${cmd_name} >/dev/null; then
+      log "Missing required command dependency: $cmd_name"
       exit -1
     fi
   done
@@ -26,7 +26,7 @@ function check-env() {
 
 function workdir() {
   mkdir -p "$1"
-  pushd "$1" > /dev/null
+  pushd "$1" >/dev/null
 }
 
 if [ "${NOTION_REPACKAGED_DEBUG}" = true ]; then
