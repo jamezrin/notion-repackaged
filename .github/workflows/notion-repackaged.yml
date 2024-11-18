@@ -18,7 +18,7 @@ jobs:
     name: Preload variables
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - id: preload-variables
         name: Load variables and set them as outputs
         run: |
@@ -43,8 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [preload-variables]
     steps:
-      - uses: actions/checkout@v2
-      - uses: release-drafter/release-drafter@v5
+      - uses: actions/checkout@v4
+      - uses: release-drafter/release-drafter@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -59,7 +59,7 @@ jobs:
       NOTION_VERSION: ${{ needs.preload-variables.outputs.notion_version }}
       NOTION_REPACKAGED_REVISION: ${{ needs.preload-variables.outputs.notion_repackaged_revision }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install moreutils
         run: sudo apt-get install -y moreutils
       - name: Download official Windows build
@@ -72,7 +72,7 @@ jobs:
         working-directory: build
         run: 7z a vanilla-src.zip vanilla-src
       - name: Save vanilla sources as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: vanilla-sources
           path: build/vanilla-src.zip
@@ -82,13 +82,13 @@ jobs:
     needs: [make-vanilla-sources, preload-variables]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install icnsutils and moreutils
         run: sudo apt-get install -y icnsutils moreutils
       - name: Force to use HTTPS instead of SSH
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Retrieve saved vanilla sources
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: vanilla-sources
           path: build/vanilla-src.zip
@@ -103,7 +103,7 @@ jobs:
         working-directory: build
         run: 7z a enhanced-src.zip enhanced-src
       - name: Save enhanced sources as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: enhanced-sources
           path: build/enhanced-src.zip
@@ -138,12 +138,12 @@ jobs:
           - target: macos
             edition: vanilla
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Retrieve saved sources
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.edition }}-sources
           path: sources.zip
@@ -180,6 +180,6 @@ jobs:
         edition: [vanilla, enhanced]
     runs-on: ubuntu-latest
     steps:
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v5
         with:
           name: "${{ matrix.edition }}-sources"
