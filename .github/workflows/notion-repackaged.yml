@@ -24,13 +24,13 @@ jobs:
         run: |
           source notion-repackaged.sh
 
-          echo "::set-output name=notion_version::$NOTION_VERSION"
-          echo "::set-output name=notion_repackaged_revision::$NOTION_REPACKAGED_REVISION"
-          echo "::set-output name=notion_download_hash::$NOTION_DOWNLOAD_HASH"
-          echo "::set-output name=notion_enhancer_desktop_commit::$NOTION_ENHANCER_DESKTOP_COMMIT"
+          echo "::save-state name=notion_version::$NOTION_VERSION"
+          echo "::save-state name=notion_repackaged_revision::$NOTION_REPACKAGED_REVISION"
+          echo "::save-state name=notion_download_hash::$NOTION_DOWNLOAD_HASH"
+          echo "::save-state name=notion_enhancer_desktop_commit::$NOTION_ENHANCER_DESKTOP_COMMIT"
 
           NOTION_REPACKAGED_VERSION_REV="${NOTION_VERSION}-${NOTION_REPACKAGED_REVISION}"
-          echo "::set-output name=notion_repackaged_version_rev::$NOTION_REPACKAGED_VERSION_REV"
+          echo "::save-state name=notion_repackaged_version_rev::$NOTION_REPACKAGED_VERSION_REV"
     outputs:
       notion_version: ${{ steps.preload-variables.outputs.notion_version }}
       notion_repackaged_revision: ${{ steps.preload-variables.outputs.notion_repackaged_revision }}

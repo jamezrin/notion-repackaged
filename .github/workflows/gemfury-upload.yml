@@ -10,9 +10,9 @@ on:
         description: Release tag
         required: true
 env:
-  RELEASES_URL: 'https://github.com/notion-enhancer/notion-repackaged/releases'
+  RELEASES_URL: "https://github.com/notion-enhancer/notion-repackaged/releases"
   RELEASE_VERSION: "${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.release_tag }}"
-  GEMFURY_PUSH_URL: 'push.fury.io/notion-repackaged/'
+  GEMFURY_PUSH_URL: "push.fury.io/notion-repackaged/"
 
 jobs:
   strip-revision:
@@ -22,7 +22,7 @@ jobs:
       - id: strip-revision
         run: |
           RELEASE_VERSION_REV_STRIPPED=$(echo $RELEASE_VERSION | sed 's/^v//')
-          echo "::set-output name=release_version_rev_stripped::$RELEASE_VERSION_REV_STRIPPED"
+          echo "::save-state name=release_version_rev_stripped::$RELEASE_VERSION_REV_STRIPPED"
     outputs:
       release_version_rev_stripped: ${{ steps.strip-revision.outputs.release_version_rev_stripped }}
 
@@ -37,9 +37,9 @@ jobs:
         package_name: [notion-app, notion-app-enhanced]
         include:
           - package_type: deb
-            filename_format: '{0}_{1}_amd64.deb'
+            filename_format: "{0}_{1}_amd64.deb"
           - package_type: rpm
-            filename_format: '{0}-{1}.x86_64.rpm'
+            filename_format: "{0}-{1}.x86_64.rpm"
     steps:
       - name: Reupload artifacts to Gemfury
         env:
