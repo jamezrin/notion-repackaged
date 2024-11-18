@@ -57,8 +57,10 @@ jobs:
       NOTION_REPACKAGED_REVISION: ${{ needs.preload-variables.outputs.notion_repackaged_revision }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install moreutils and asar
-        run: sudo apt-get install -y moreutils asar
+      - name: Install moreutils
+        run: sudo apt-get install -y moreutils
+      - name: Install asar
+        run: npm install -g asar
       - name: Download official Windows build
         env:
           NOTION_DOWNLOAD_HASH: ${{ needs.preload-variables.outputs.notion_download_hash }}
@@ -80,8 +82,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install icnsutils, asar and moreutils
-        run: sudo apt-get install -y icnsutils moreutils asar
+      - name: Install icnsutils and moreutils
+        run: sudo apt-get install -y icnsutils moreutils
+      - name: Install asar
+        run: npm install -g asar
       - name: Force to use HTTPS instead of SSH
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Retrieve saved vanilla sources
