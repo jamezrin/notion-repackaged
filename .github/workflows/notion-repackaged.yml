@@ -2,7 +2,7 @@ name: Notion Repackaged Main
 
 on:
   push:
-    branches: [main]
+    branches: [main, bump-notion-v400]
     paths:
       - "notion-repackaged.sh"
       - ".github/workflows/notion-repackaged.yml"
