@@ -3,9 +3,6 @@ name: Notion Repackaged Main
 on:
   push:
     branches: [main, bump-notion-v400]
-    paths:
-      - "notion-repackaged.sh"
-      - ".github/workflows/notion-repackaged.yml"
 
   workflow_dispatch:
     inputs: {}
