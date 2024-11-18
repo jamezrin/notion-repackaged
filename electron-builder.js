@@ -6,23 +6,30 @@ function ensureEnvVar(envVarName) {
   return process.env[envVarName];
 }
 
-const editionEnvVar = ensureEnvVar('NOTION_REPACKAGED_EDITION'),
-  versionEnvVar = ensureEnvVar('NOTION_VERSION'),
-  revisionEnvVar = ensureEnvVar('NOTION_REPACKAGED_REVISION');
+const envVars = {
+  Edition: ensureEnvVar('NOTION_REPACKAGED_EDITION'),
+  Version: ensureEnvVar('NOTION_VERSION'),
+  Revision: ensureEnvVar('NOTION_REPACKAGED_REVISION'),
+}
 
-const isVanilla = editionEnvVar === 'vanilla';
+const isVanilla = envVars.Edition === 'vanilla';
 
-const productName = isVanilla ? 'Notion' : 'Notion Enhanced',
-  productId = isVanilla ? 'notion-app' : 'notion-app-enhanced',
-  conflictProductId = !isVanilla ? 'notion-app' : 'notion-app-enhanced',
-  productDescription = isVanilla
-    ? 'The all-in-one workspace for your notes and tasks'
-    : 'The all-in-one workspace for your notes and tasks, but enhanced';
+const productMetadata = isVanilla ? {
+  name: 'Notion',
+  description: 'The all-in-one workspace for your notes and tasks',
+  id: 'notion-app',
+  conflictId: 'notion-app-enhanced',
+} : {
+  name: 'Notion Enhanced',
+  description: 'The all-in-one workspace for your notes and tasks, but enhanced',
+  id: 'notion-app-enhanced',
+  conflictId: 'notion-app',
+}
 
 const fpmOptions = [
-  `--version=${versionEnvVar}`,
-  `--iteration=${revisionEnvVar}`,
-  `--conflicts=${conflictProductId}`,
+  `--version=${envVars.Version}`,
+  `--iteration=${envVars.Revision}`,
+  `--conflicts=${productMetadata.conflictId}`,
 ];
 
 const combineTargetAndArch = (targets, architectures = ['x64', 'arm64']) =>
@@ -38,12 +45,13 @@ const getPublishProviders = (platform) => [
 
 module.exports = {
   asar: true,
-  productName: productName,
+  productName: productMetadata.name,
   extraMetadata: {
-    description: productDescription,
+    description: productMetadata.description,
   },
   appId: 'com.github.notion-repackaged',
   protocols: [{ name: 'Notion', schemes: ['notion'] }],
+  npmRebuild: false,
   win: {
     icon: 'icon.ico',
     target: combineTargetAndArch(['nsis', 'zip'], ['x64']),
@@ -62,9 +70,9 @@ module.exports = {
     mimeTypes: ['x-scheme-handler/notion'],
     desktop: {
       StartupNotify: 'true',
-      StartupWMClass: productId,
+      StartupWMClass: productMetadata.id,
     },
-    target: combineTargetAndArch(['AppImage', 'deb', 'rpm', 'pacman', 'zip']),
+    target: combineTargetAndArch(['AppImage', 'deb', 'pacman', 'zip']), // FIXME: RPM build is broken, add ", 'rpm'" when fixed
     publish: getPublishProviders('linux'),
   },
   nsis: {
